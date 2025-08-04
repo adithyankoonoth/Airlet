@@ -1,0 +1,104 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+
+// 1. CONFIGURATION
+// --- Wi-Fi Credentials ---
+#define WIFI_SSID "Nothing Phone 3a"
+#define WIFI_PASSWORD "244466666"
+
+// --- Firebase Configuration ---
+#define API_KEY "AIzaSyA1oKBCewIkDwFH5NVREX-YdxrmjOKgdVI"
+#define FIREBASE_HOST "airlert-2025-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+// --- Hardware Pin Definitions ---
+const int MQ7_SENSOR_PIN = A0;
+const int BUZZER_PIN = 14; // D5 is GPIO14
+
+// --- Alert Threshold ---
+const int GAS_THRESHOLD = 85;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Car Safety System Initializing...");
+
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.print("Connected! IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  int mq7Value = analogRead(MQ7_SENSOR_PIN);
+  bool alertState = (mq7Value > GAS_THRESHOLD);
+
+  Serial.print("MQ-7 (CO) Raw Value: ");
+  Serial.println(mq7Value);
+
+  if (alertState) {
+    Serial.println("ALERT! High CO level detected!");
+    digitalWrite(BUZZER_PIN, HIGH);
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+  }
+
+  // Use a WiFiClientSecure object to handle the HTTPS connection
+  WiFiClientSecure client;
+  
+  // WORKAROUND: This tells the client to NOT validate the server's certificate.
+  // This is necessary to bypass the deep SSL/TLS issue we diagnosed.
+  client.setInsecure();
+
+  Serial.print("Connecting to Firebase host: ");
+  Serial.println(FIREBASE_HOST);
+
+  // Connect to the Firebase host on the standard HTTPS port 443
+  if (!client.connect(FIREBASE_HOST, 443)) {
+    Serial.println("Connection to host failed!");
+    delay(5000);
+    return;
+  }
+
+  Serial.println("Connected to host successfully!");
+
+  // Construct the JSON payload
+  String jsonPayload = "{\"mq7_co_level\":" + String(mq7Value) + ",\"alert_triggered\":" + (alertState ? "true" : "false") + "}";
+  
+  // Construct the full path for the REST API call
+  String path = "/CAR_01/data.json?auth=" + String(API_KEY);
+
+  // Send the HTTP PUT request
+  Serial.println("--- SENDING REQUEST ---");
+  client.print("PUT " + path + " HTTP/1.1\r\n");
+  client.print("Host: " + String(FIREBASE_HOST) + "\r\n");
+  client.print("Connection: close\r\n");
+  client.print("Content-Type: application/json\r\n");
+  client.print("Content-Length: " + String(jsonPayload.length()) + "\r\n");
+  client.print("\r\n");
+  client.print(jsonPayload);
+  client.print("\r\n");
+  Serial.println("Request sent.");
+  Serial.println("--- WAITING FOR RESPONSE ---");
+
+  // Read and print the response from the server character by character
+  while (client.connected() || client.available()) {
+    if (client.available()) {
+      char c = client.read();
+      Serial.print(c);
+    }
+  }
+  
+  Serial.println("\n--- END OF RESPONSE ---");
+  client.stop();
+  Serial.println("Connection closed.");
+  Serial.println("---------------------------------");
+  
+  delay(10000); // Wait 10 seconds before the next update
+}
