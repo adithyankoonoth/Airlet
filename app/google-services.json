@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "579073366307",
+    "firebase_url": "https://airlert-2025-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "airlert-2025",
+    "storage_bucket": "airlert-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:579073366307:android:5d22b702ecc4b9b3d89496",
+        "android_client_info": {
+          "package_name": "com.example.airlet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWXHUPJA_KnB2Sx6O1BWJ9iXSn7ZwOywo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

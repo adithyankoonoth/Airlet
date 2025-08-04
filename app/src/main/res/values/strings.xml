@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AirAlert</string>
+
+    <!-- CO Level related strings -->
+    <string name="co_level_label">CO Level: %1$s ppm</string>
+    <string name="co_level_na">CO Level: N/A</string>
+
+    <!-- Status strings -->
+    <string name="status_danger">DANGER - High CO levels detected!</string>
+    <string name="status_safe">SAFE - CO levels normal</string>
+    <string name="status_waiting">Waiting for sensor data...</string>
+    <string name="status_error">Error connecting to sensor</string>
+
+    <!-- Notification strings -->
+    <string name="notification_title">Carbon Monoxide Alert</string>
+    <string name="notification_message">Dangerous CO level detected: %1$s ppm</string>
+    <string name="notification_channel_name">Car Safety Alerts</string>
+    <string name="notification_channel_description">Notifications for carbon monoxide detection in your vehicle</string>
+</resources>
